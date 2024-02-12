@@ -1,24 +1,25 @@
 # Login with JWT
 
-## Keys
-To login with JWT you need a private/public key pair. If you sign the JWT with your private key and provide
-the matching public key to the Dashboard the trust is established and you can issue login tokens. You need to set
-one of the supported claims:
-pi:dashboard_username, pi:dashboard_email and pi:dashboard_userid
+## Setup
+- Setup trusted hosts in your Dashboard to allow embedding from "http://localhost:8081"
+- You will need keys to use for signing the JWT. You can use the 'keys/createKeys.sh' script in this repository to generate some if needed. Otherwise, add the public and private keys you wish to use to the 'keys' directory in this repository
+- Add the public key, with the header and footer stripped to the Dashboard on the Admin screen. If you generated the keys using the createKeys.sh script, this file will be called 'signing_key.pub'
+- Modify 'auth.js' as needed for your setup. This includes:
+    - Checking that the 'dashboard' variable points to the URL of your running Dashboard instance
+    - If your keys weren't generated using the included script, ensure that the 'algorithm' variable matches that required by your key (RS512, RS384, and RS256 are currently supported) and that the 'signing_key_file_name' variable matches the file name of your private key
+    - Setting up the claims (see section below)
 
-For this demo if you haven't generated keys use keys/createKeys.sh on linux to generate test keys.
+### Setting up claims
+The following three claims are currently supported:
+- Email: https://www.panintelligence.com/claims/email
+- Usercode: https://www.panintelligence.com/claims/usercode
+- UserSyncPayload: https://www.panintelligence.com/claims/userSyncPayload - this claim is used in relation to the 'Auto User Generation feature' and can be ignored for normal login. A commented out example is included in the 'auth.js' file and can be uncommented and modified should you wish to demo this feature
 
-## Demo
+The usercode and email claims are used to determine which user you are logging in as. The email claim will only be used if the usercode claim is not provided as the latter takes higher priority.
 
-### Prerequisites to run this demo
-- Setup trusted hosts in your Dashboard to allow embedding from http://localhost:8081
-- Add the public key from signing_key.pub to the Dashboard on the admin screen (strip the header and footer)
-- Check that auth.js contains valid dashboard and loginAs values
-
-### Running the demo
-To run the demo use run.sh, it uses npx to launch a webserver and you can open localhost:8081 in a browser.
-If all the setup is correct you should be logged in to the Dashboard as that user.
+## Running the demo
+To run the demo, execute the run.sh script. It uses npx to launch a webserver at "localhost:8081". If all the setup is correct, when you navigate to this location on your browser you should be logged in to the Dashboard as the user defined in the claims. If using the 'userSyncPayload' claim, this includes the creation of the user defined in the 
 
 ## Important Notes
 - Don't expose your private key in production, it needs to be kept secret!
-- The jwt creation code would typically be run server side, this is just an example!
+- This is just an example setup, the JWT creation code would typically be run server-side
